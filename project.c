@@ -8,8 +8,9 @@ struct emp_data {
     char empName[MAX];
     char designation[MAX];
     struct emp_data *next;
-} *p;
+};
 
+// Function to insert a node at the beginning of the linked list
 struct emp_data *insertFirst(struct emp_data *plist, int id, char name[], char desg[]) {
     struct emp_data *temp = (struct emp_data*)malloc(sizeof(struct emp_data));
 
@@ -23,9 +24,10 @@ struct emp_data *insertFirst(struct emp_data *plist, int id, char name[], char d
     strcpy(temp->designation, desg);
     temp->next = plist;
     plist = temp;
-    return(plist);
+    return plist;
 }
 
+// Function to insert a node at the end of the linked list
 struct emp_data *insertLast(struct emp_data *plist, int id, char name[], char desg[]) {
     struct emp_data *temp = (struct emp_data*)malloc(sizeof(struct emp_data));
     struct emp_data *ptr;
@@ -50,6 +52,7 @@ struct emp_data *insertLast(struct emp_data *plist, int id, char name[], char de
     return plist;
 }
 
+// Function to insert a node after a specific employee number
 struct emp_data *insertAfter(struct emp_data *plist, int id, char name[], char desg[], int afterId) {
     struct emp_data *temp = (struct emp_data*)malloc(sizeof(struct emp_data));
     struct emp_data *ptr = plist;
@@ -78,6 +81,7 @@ struct emp_data *insertAfter(struct emp_data *plist, int id, char name[], char d
     return plist;
 }
 
+// Function to print the details of a node
 void printNode(struct emp_data *p) {
     printf("\n Employee Details:\n");
     printf("\n Employee No    : %d", p->empno);
@@ -86,9 +90,15 @@ void printNode(struct emp_data *p) {
     printf("-------------------------------------\n");
 }
 
+// Function to delete a node by employee number
 struct emp_data* deleteNode(struct emp_data *plist, int id) {
     struct emp_data *ptr;
     struct emp_data *bptr;
+
+    if (plist == NULL) {
+        printf("\n List is empty.\n");
+        return plist;
+    }
 
     if (plist->empno == id) {
         ptr = plist;
@@ -96,7 +106,7 @@ struct emp_data* deleteNode(struct emp_data *plist, int id) {
         printNode(plist);
         plist = plist->next;
         free(ptr);
-        return(plist);
+        return plist;
     }
     for (ptr = plist->next, bptr = plist; ptr != NULL; ptr = ptr->next, bptr = bptr->next) {
         if (ptr->empno == id) {
@@ -104,13 +114,14 @@ struct emp_data* deleteNode(struct emp_data *plist, int id) {
             printNode(ptr);
             bptr->next = ptr->next;
             free(ptr);
-            return(plist);
+            return plist;
         }
     }
     printf("\n Employee Number %d not found ", id);
-    return(plist);
+    return plist;
 }
 
+// Function to search for a node by employee number
 void search(struct emp_data *plist, int key) {
     struct emp_data *ptr;
 
@@ -124,6 +135,7 @@ void search(struct emp_data *plist, int key) {
     printf("\n Employee Number %d not found ", key);
 }
 
+// Function to display all nodes
 void display(struct emp_data *plist) {
     struct emp_data *ptr;
 
@@ -132,6 +144,7 @@ void display(struct emp_data *plist) {
     }
 }
 
+// Function to sort the linked list in ascending order
 struct emp_data* sortAsc(struct emp_data *plist) {
     struct emp_data *i, *j;
     int tempEmpNo;
@@ -157,6 +170,7 @@ struct emp_data* sortAsc(struct emp_data *plist) {
     return plist;
 }
 
+// Function to sort the linked list in descending order
 struct emp_data* sortDsc(struct emp_data *plist) {
     struct emp_data *i, *j;
     int tempEmpNo;
@@ -182,6 +196,7 @@ struct emp_data* sortDsc(struct emp_data *plist) {
     return plist;
 }
 
+// Function to display the menu options
 void menu() {
     printf("---------------------------------------------\n");
     printf("Enter option: \n");
@@ -192,11 +207,13 @@ void menu() {
     printf("5. to SORT the records in ascending order\n");
     printf("6. to SORT the records in descending order\n");
     printf("7. to DELETE a record from the database\n");
-    printf("8 to EXIT\n");
-
+    printf("8. to SAVE records to file\n");
+    printf("9. to LOAD records from file\n");
+    printf("10. to EXIT\n");
     printf("---------------------------------------------\n");
 }
 
+// Function to check if an employee number is duplicate
 int isDuplicateEmpNo(struct emp_data *plist, int eno) {
     struct emp_data *ptr = plist;
     while (ptr != NULL) {
@@ -208,6 +225,7 @@ int isDuplicateEmpNo(struct emp_data *plist, int eno) {
     return 0;
 }
 
+// Function to get employee details from the user
 void getEmployeeDetails(struct emp_data *plist, int *eno, char name[], char desig[]) {
     int valid = 0;
     while (!valid) {
@@ -225,11 +243,14 @@ void getEmployeeDetails(struct emp_data *plist, int *eno, char name[], char desi
     }
     printf(" Enter the Employee name: ");
     getchar(); // Clear newline character left by scanf
-    gets(name);
+    fgets(name, MAX, stdin);
+    name[strcspn(name, "\n")] = 0; // Remove trailing newline character
     printf(" Enter the Employee Designation: ");
-    gets(desig);
+    fgets(desig, MAX, stdin);
+    desig[strcspn(desig, "\n")] = 0; // Remove trailing newline character
 }
 
+// Function to insert initial employees into the linked list
 void insertInitialEmployees(struct emp_data **plist) {
     int num, i, eno;
     char name[MAX], desig[MAX];
@@ -242,6 +263,45 @@ void insertInitialEmployees(struct emp_data **plist) {
         getEmployeeDetails(*plist, &eno, name, desig);
         *plist = insertFirst(*plist, eno, name, desig);
     }
+}
+
+// Function to save the linked list to a file
+void saveToFile(struct emp_data *plist) {
+    FILE *file = fopen("employee_data.txt", "w");
+    if (file == NULL) {
+        printf("\n Error opening file for writing.\n");
+        return;
+    }
+
+    struct emp_data *ptr = plist;
+    while (ptr != NULL) {
+        fprintf(file, "%d,%s,%s\n", ptr->empno, ptr->empName, ptr->designation);
+        ptr = ptr->next;
+    }
+
+    fclose(file);
+    printf("\n Data saved to file successfully.\n");
+}
+
+// Function to load the linked list from a file
+struct emp_data* loadFromFile() {
+    FILE *file = fopen("employee_data.txt", "r");
+    if (file == NULL) {
+        printf("\n Error opening file for reading.\n");
+        return NULL;
+    }
+
+    struct emp_data *plist = NULL;
+    int eno;
+    char name[MAX], desig[MAX];
+
+    while (fscanf(file, "%d,%29[^,],%29[^\n]\n", &eno, name, desig) == 3) {
+        plist = insertLast(plist, eno, name, desig);
+    }
+
+    fclose(file);
+    printf("\n Data loaded from file successfully.\n");
+    return plist;
 }
 
 int main() {
@@ -269,7 +329,6 @@ int main() {
                 if (plist == NULL) {
                     printf("\n List is empty.");
                 } else {
-                
                     display(plist);
                 }
                 break;
@@ -323,7 +382,6 @@ int main() {
                 break;
             }
 
-
             case 5:
                 plist = sortAsc(plist);
                 printf("\n Records sorted in ascending order.\n");
@@ -341,6 +399,14 @@ int main() {
                 break;
 
             case 8:
+                saveToFile(plist);
+                break;
+
+            case 9:
+                plist = loadFromFile();
+                break;
+
+            case 10:
                 exit(0);
 
             default:
@@ -350,5 +416,3 @@ int main() {
 
     return 0;
 }
-
-
